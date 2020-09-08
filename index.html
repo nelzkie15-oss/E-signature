@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-2/css/all.min.css" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <title>Sample signature</title>
+     <script type="text/javascript">
+        function signatureCapture() {
+            var canvas = document.getElementById("newSignature");
+            var context = canvas.getContext("2d");
+            canvas.width = 400;
+            canvas.height = 200;
+            context.fillStyle = "#fff";
+            context.strokeStyle = "#444";
+            context.lineWidth = 1.5;
+            context.lineCap = "round";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            var disableSave = true;
+            var pixels = [];
+            var cpixels = [];
+            var xyLast = {};
+            var xyAddLast = {};
+            var calculate = false; { //functions
+                function remove_event_listeners() {
+                    canvas.removeEventListener('mousemove', on_mousemove, false);
+                    canvas.removeEventListener('mouseup', on_mouseup, false);
+                    canvas.removeEventListener('touchmove', on_mousemove, false);
+                    canvas.removeEventListener('touchend', on_mouseup, false);
+
+                    document.body.removeEventListener('mouseup', on_mouseup, false);
+                    document.body.removeEventListener('touchend', on_mouseup, false);
+                }
+
+                function get_coords(e) {
+                    var x, y;
+
+                    if (e.changedTouches && e.changedTouches[0]) {
+                        var offsety = canvas.offsetTop || 0;
+                        var offsetx = canvas.offsetLeft || 0;
+
+                        x = e.changedTouches[0].pageX - offsetx;
+                        y = e.changedTouches[0].pageY - offsety;
+                    } else if (e.layerX || 0 == e.layerX) {
+                        x = e.layerX;
+                        y = e.layerY;
+                    } else if (e.offsetX || 0 == e.offsetX) {
+                        x = e.offsetX;
+                        y = e.offsetY;
+                    }
+
+                    return {
+                        x: x,
+                        y: y
+                    };
+                };
+
+                function on_mousedown(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    canvas.addEventListener('mouseup', on_mouseup, false);
+                    canvas.addEventListener('mousemove', on_mousemove, false);
+                    canvas.addEventListener('touchend', on_mouseup, false);
+                    canvas.addEventListener('touchmove', on_mousemove, false);
+                    document.body.addEventListener('mouseup', on_mouseup, false);
+                    document.body.addEventListener('touchend', on_mouseup, false);
+
+                    empty = false;
+                    var xy = get_coords(e);
+                    context.beginPath();
+                    pixels.push('moveStart');
+                    context.moveTo(xy.x, xy.y);
+                    pixels.push(xy.x, xy.y);
+                    xyLast = xy;
+                };
+
+                function on_mousemove(e, finish) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    var xy = get_coords(e);
+                    var xyAdd = {
+                        x: (xyLast.x + xy.x) / 2,
+                        y: (xyLast.y + xy.y) / 2
+                    };
+
+                    if (calculate) {
+                        var xLast = (xyAddLast.x + xyLast.x + xyAdd.x) / 3;
+                        var yLast = (xyAddLast.y + xyLast.y + xyAdd.y) / 3;
+                        pixels.push(xLast, yLast);
+                    } else {
+                        calculate = true;
+                    }
+
+                    context.quadraticCurveTo(xyLast.x, xyLast.y, xyAdd.x, xyAdd.y);
+                    pixels.push(xyAdd.x, xyAdd.y);
+                    context.stroke();
+                    context.beginPath();
+                    context.moveTo(xyAdd.x, xyAdd.y);
+                    xyAddLast = xyAdd;
+                    xyLast = xy;
+
+                };
+
+                function on_mouseup(e) {
+                    remove_event_listeners();
+                    disableSave = false;
+                    context.stroke();
+                    pixels.push('e');
+                    calculate = false;
+                };
+            }
+            canvas.addEventListener('touchstart', on_mousedown, false);
+            canvas.addEventListener('mousedown', on_mousedown, false);
+        }
+
+        function signatureClear() {
+            var canvas = document.getElementById("newSignature");
+            var context = canvas.getContext("2d");
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+  </head>
+  <body>
+<nav class="navbar navbar-expand-lg navbar" style="background-color: #7952b3;">
+  <div class="container">
+    <a class="navbar-brand" href="#">Sample signature</a>
+  </div>
+</nav>
+<section class="signature-component">
+   <script src='https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js'></script>
+   <script src="js/script.js"></script>
+</section>
+<div class="container">
+ <h1>Canvas Signature</h1>
+<form name="sign_frm" id="sign_frm" method="POST">
+   <div class="row">
+
+     <div class="col-5">
+          <div id="msg"></div>
+          <div>
+            <canvas id="signature-pads1" class="signature-pads1" width="300" height="120" style="border:1px solid;margin-bottom:10px;"></canvas>
+               <input type="hidden" alt="user_signature" id="user_signature">
+
+          </div>
+          <div class="d-flex">
+              <div class="col-7">
+                 <input type="trxt" class="form-control form-control-sm" placeholder="Name here" alt='user_name' style="width: 100%">
+              </div>
+              <div>
+               <button class="" id="clear1" style="color: blue;border-radius: 4px"><i class="fas fa-eraser"></i></button>
+                <script type="text/javascript">
+                    var signaturePad1 = new SignaturePad(document.getElementById('signature-pads1'), {
+                        backgroundColor: 'rgba(255, 255, 255, 0)',
+                        penColor: 'rgb(0, 0, 0)'
+                    });
+
+
+                    var cancelButton1 = document.getElementById('clear1');
+                        cancelButton1.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        signaturePad1.clear();
+                    });
+                </script>
+              </div>
+          </div>                    
+     <!----sign 1-->
+       <p>Signature over Printed Name</p>
+    </div>
+   </div>
+    <button type="button" class="btn btn-primary save" value="submit">submit signature</button>
+</form>
+</div>
+  <script type="text/javascript">
+    $(document).ready(function(){
+
+      $('.save').click(function(e){
+       e.preventDefault();
+
+        if(signaturePad1.isEmpty())
+          console.log('Signature is Empty');
+        else
+         var sign = signaturePad1.toDataURL('image/png');
+         var user_signature = document.getElementById('user_signature').value = sign;
+         console.log('===============user_signature==============');
+         console.log(user_signature);
+
+         const user_name = $('input[alt =user_name]').val();
+         console.log('==========user_name=============');
+         console.log(user_name);
+         
+         $.ajax({
+            
+            type: 'POST',
+            data: {
+              user_signature: user_signature,
+              user_name: user_name
+            },
+            async: false,
+            cache: false,
+            url: 'signature_process.php',
+            success: function(data){
+              $('#msg').html(data);
+             window.location.reload(true);
+            }
+         });
+        
+      });
+    });
+  </script>
+  </script>
+      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+  </body>
+  </html>
